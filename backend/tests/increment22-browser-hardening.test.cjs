@@ -438,8 +438,20 @@ test('56 [UNIT] snapshot overwrite, corruption and path traversal stay blocked',
 
 // ── 9. Real loopback transport ──────────────────────────────────────────────
 async function loopbackServer(t, handler) {
-  const key = require('node:fs').readFileSync(path.join(__dirname, 'fixtures', 'key.pem'))
-  const cert = require('node:fs').readFileSync(path.join(__dirname, 'fixtures', 'cert.pem'))
+  // Generate disposable loopback credentials: PEM files are intentionally not
+  // tracked, so a clean checkout must not depend on local fixture secrets.
+  const syncFs = require('node:fs')
+  const directory = syncFs.mkdtempSync(path.join(os.tmpdir(), 'textfx-loopback-tls-'))
+  t.after(() => syncFs.rmSync(directory, { recursive: true, force: true }))
+  const keyPath = path.join(directory, 'key.pem')
+  const certPath = path.join(directory, 'cert.pem')
+  require('node:child_process').execFileSync('openssl', [
+    'req', '-x509', '-newkey', 'rsa:2048', '-nodes',
+    '-keyout', keyPath, '-out', certPath, '-days', '1',
+    '-subj', '/CN=127.0.0.1', '-addext', 'subjectAltName=IP:127.0.0.1',
+  ], { stdio: 'ignore' })
+  const key = syncFs.readFileSync(keyPath)
+  const cert = syncFs.readFileSync(certPath)
   const server = https.createServer({ key, cert }, handler)
   server.listen(0, '127.0.0.1')
   await new Promise(resolve => server.once('listening', resolve))

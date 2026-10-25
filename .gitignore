@@ -41,3 +41,6 @@ desktop.ini
 
 # ── Electron ─────────────────────────────────────────────────────────────────
 dist-electron/
+
+# Generated verification reports and checkpoint archives
+/generated-artifacts/
