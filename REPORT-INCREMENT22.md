@@ -227,3 +227,22 @@ node --test tests/*.test.cjs               # exit 0
 2. `npm run browser:install` أو صورة فيها Chromium، لتحويل اختبار المتصفح من «فرع فشل» إلى اختبار سلوك حقيقي.
 3. `.git` في الأرشيف، ليصبح `git diff` ممكنًا.
 4. نطاق Increment23 نصًّا — الإشارة الوحيدة المتاحة «cache counters hard-coded 0 → re-check in 23» لا تكفي نطاقًا.
+
+---
+
+## 11. Revalidation in the recovered working copy — 2026-10-25
+
+The report above records an earlier Increment22 run. Revalidation was performed against the current working copy after extracting and testing the exact Increment20 archive separately. The current backend includes Increment21 changes; report totals below therefore supersede the earlier **121** total for the current copy without changing the historical result above.
+
+| Check | Result |
+|---|---|
+| `npm test` in `backend/` | Exit **0**, **131/131**, 0 failed, 0 skipped |
+| `npm run build` plus `node --test tests/increment22-browser-hardening.test.cjs` | Exit **0**, **40/40**, 0 failed, 0 skipped |
+| `[REAL-TCP]` browser transport/security checks | **5 passed** on loopback TLS/socket fixtures |
+| Chromium binary | Installed via `npm run browser:install` |
+| Chromium launch / real page extraction | **NOT RUN**: launch failed before page creation because system libraries are absent: `libatk-1.0.so.0`, `libatk-bridge-2.0.so.0`, `libXcomposite.so.1`, `libXdamage.so.1`, `libXfixes.so.3`, `libXrandr.so.2`, `libgbm.so.1`, `libxkbcommon.so.0`, `libasound.so.2`, `libatspi.so.0`. Installing OS packages requires elevated privileges unavailable to this process. No sandbox bypass was attempted. |
+| Runtime dependency audit | `npm audit --omit=dev --audit-level=high`: exit **0**, 0 vulnerabilities |
+
+Raw logs: `increment22-backend.log`, `increment22-browser-hardening.log`. The browser-unavailable test only proves fail-closed behavior; it is not evidence that the Chromium extraction path works. The Increment20 archive remains unchanged and is available at `TextFX-Increment20-CoreContracts.zip`; the working directory also contains a separately verified Increment21 checkpoint.
+
+**Current status:** SSRF controls, evidence integrity, claim-state boundaries, loopback transport, and regression suite pass. Real Chromium extraction remains explicitly unverified due missing system libraries. This environment limitation does not justify claiming that the full Browser Agent acceptance criterion ran.
