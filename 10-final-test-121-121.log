@@ -1,0 +1,738 @@
+TAP version 13
+# Subtest: end-to-end mocked pipeline completes and preserves the Court-selected output during counterfactual replay
+ok 1 - end-to-end mocked pipeline completes and preserves the Court-selected output during counterfactual replay
+  ---
+  duration_ms: 5.417574
+  type: 'test'
+  ...
+# Subtest: end-to-end pipeline performs at most one targeted revision before the shadow replay
+ok 2 - end-to-end pipeline performs at most one targeted revision before the shadow replay
+  ---
+  duration_ms: 1.088371
+  type: 'test'
+  ...
+# Subtest: shadow replay failure is non-fatal and the selected creative artifact remains intact
+ok 3 - shadow replay failure is non-fatal and the selected creative artifact remains intact
+  ---
+  duration_ms: 0.997311
+  type: 'test'
+  ...
+# Subtest: browser references are user-level data, retain provenance and force human review
+ok 4 - browser references are user-level data, retain provenance and force human review
+  ---
+  duration_ms: 12.456011
+  type: 'test'
+  ...
+# Subtest: browser attachments cannot be used as a caller-selected tenant security boundary
+ok 5 - browser attachments cannot be used as a caller-selected tenant security boundary
+  ---
+  duration_ms: 0.969
+  type: 'test'
+  ...
+# Subtest: missing research snapshots fail before any creative generation
+ok 6 - missing research snapshots fail before any creative generation
+  ---
+  duration_ms: 1.10624
+  type: 'test'
+  ...
+# Subtest: test harness does not leave persistent memory fixtures behind
+ok 7 - test harness does not leave persistent memory fixtures behind
+  ---
+  duration_ms: 0.677032
+  type: 'test'
+  ...
+# Subtest: URL validation accepts exact HTTPS host and canonicalizes fragments
+ok 8 - URL validation accepts exact HTTPS host and canonicalizes fragments
+  ---
+  duration_ms: 4.10368
+  type: 'test'
+  ...
+# Subtest: URL policy blocks schemes, credentials, ports, IP forms, suffix tricks and query secrets
+ok 9 - URL policy blocks schemes, credentials, ports, IP forms, suffix tricks and query secrets
+  ---
+  duration_ms: 2.034972
+  type: 'test'
+  ...
+# Subtest: IP policy blocks private, loopback, link-local, metadata, mapped IPv6 and reserved ranges
+ok 10 - IP policy blocks private, loopback, link-local, metadata, mapped IPv6 and reserved ranges
+  ---
+  duration_ms: 2.570204
+  type: 'test'
+  ...
+# Subtest: DNS resolution rejects mixed public/private answers
+ok 11 - DNS resolution rejects mixed public/private answers
+  ---
+  duration_ms: 0.639184
+  type: 'test'
+  ...
+# Subtest: DNS resolution rejects empty answers and selects a validated destination
+ok 12 - DNS resolution rejects empty answers and selects a validated destination
+  ---
+  duration_ms: 0.667774
+  type: 'test'
+  ...
+# Subtest: browser authorization is fail-closed and rejects short tokens and missing bearer credentials
+ok 13 - browser authorization is fail-closed and rejects short tokens and missing bearer credentials
+  ---
+  duration_ms: 0.469148
+  type: 'test'
+  ...
+# Subtest: request contract bounds page budget, deduplicates and rejects arbitrary actions
+ok 14 - request contract bounds page budget, deduplicates and rejects arbitrary actions
+  ---
+  duration_ms: 0.422896
+  type: 'test'
+  ...
+# Subtest: evidence is bounded, fingerprinted and explicitly unreviewed
+ok 15 - evidence is bounded, fingerprinted and explicitly unreviewed
+  ---
+  duration_ms: 0.923897
+  type: 'test'
+  ...
+# Subtest: run slot is reserved synchronously and released idempotently
+ok 16 - run slot is reserved synchronously and released idempotently
+  ---
+  duration_ms: 0.368951
+  type: 'test'
+  ...
+# Subtest: snapshot restoration reuses stored data without launching Chromium or calling a model
+ok 17 - snapshot restoration reuses stored data without launching Chromium or calling a model
+  ---
+  duration_ms: 41.437142
+  type: 'test'
+  ...
+# Subtest: snapshot storage refuses overwrite
+ok 18 - snapshot storage refuses overwrite
+  ---
+  duration_ms: 3.126751
+  type: 'test'
+  ...
+# Subtest: snapshot corruption is detected
+ok 19 - snapshot corruption is detected
+  ---
+  duration_ms: 2.522003
+  type: 'test'
+  ...
+# Subtest: snapshot deletion and missing IDs are handled without path traversal
+ok 20 - snapshot deletion and missing IDs are handled without path traversal
+  ---
+  duration_ms: 4.77121
+  type: 'test'
+  ...
+# Subtest: pinned transport preserves TLS host and supports Node all-address lookup without re-resolving
+ok 21 - pinned transport preserves TLS host and supports Node all-address lookup without re-resolving
+  ---
+  duration_ms: 1.369796
+  type: 'test'
+  ...
+# Subtest: transport does not follow redirects
+ok 22 - transport does not follow redirects
+  ---
+  duration_ms: 0.560287
+  type: 'test'
+  ...
+# Subtest: transport rejects unsupported binary content
+ok 23 - transport rejects unsupported binary content
+  ---
+  duration_ms: 0.419906
+  type: 'test'
+  ...
+# Subtest: transport rejects encoded bodies to avoid unbounded decompression
+ok 24 - transport rejects encoded bodies to avoid unbounded decompression
+  ---
+  duration_ms: 0.580777
+  type: 'test'
+  ...
+# Subtest: transport enforces declared page byte limit
+ok 25 - transport enforces declared page byte limit
+  ---
+  duration_ms: 0.524247
+  type: 'test'
+  ...
+# Subtest: transport enforces actual streamed page byte limit
+ok 26 - transport enforces actual streamed page byte limit
+  ---
+  duration_ms: 1.18118
+  type: 'test'
+  ...
+# Subtest: transport refuses an already expired deadline
+ok 27 - transport refuses an already expired deadline
+  ---
+  duration_ms: 0.282676
+  type: 'test'
+  ...
+# Subtest: HTTP browser routes protect status, read, restore and deletion with token authorization
+ok 28 - HTTP browser routes protect status, read, restore and deletion with token authorization
+  ---
+  duration_ms: 66.299497
+  type: 'test'
+  ...
+# Subtest: contract: a valid CreativeIR blueprint round-trips through create → validate → summarize
+ok 29 - contract: a valid CreativeIR blueprint round-trips through create → validate → summarize
+  ---
+  duration_ms: 1.48712
+  type: 'test'
+  ...
+# Subtest: contract: rejects missing schemaVersion, wrong version, empty id, bad language, empty goal, short beats
+ok 30 - contract: rejects missing schemaVersion, wrong version, empty id, bad language, empty goal, short beats
+  ---
+  duration_ms: 0.581414
+  type: 'test'
+  ...
+# Subtest: contract: evidence reference with reviewStatus unreviewed is accepted and survives round-trip
+ok 31 - contract: evidence reference with reviewStatus unreviewed is accepted and survives round-trip
+  ---
+  duration_ms: 1.431033
+  type: 'test'
+  ...
+# Subtest: contract: promoting unreviewed evidence to verified/reviewed is rejected at the boundary
+ok 32 - contract: promoting unreviewed evidence to verified/reviewed is rejected at the boundary
+  ---
+  duration_ms: 0.383322
+  type: 'test'
+  ...
+# Subtest: compatibility: a legacy CreativeIR payload (no promptVersion/rubricVersions) validates unchanged
+ok 33 - compatibility: a legacy CreativeIR payload (no promptVersion/rubricVersions) validates unchanged
+  ---
+  duration_ms: 0.268793
+  type: 'test'
+  ...
+# Subtest: state: AgentPhase run statuses and IdeaVerdict idea statuses are disjoint namespaces
+ok 34 - state: AgentPhase run statuses and IdeaVerdict idea statuses are disjoint namespaces
+  ---
+  duration_ms: 0.667972
+  type: 'test'
+  ...
+# Subtest: state: a rejected idea verdict on a court review never mutates the run status
+ok 35 - state: a rejected idea verdict on a court review never mutates the run status
+  ---
+  duration_ms: 313.670187
+  type: 'test'
+  ...
+# Subtest: versioning: system prompt, court rubric and review rubric carry explicit versions
+ok 36 - versioning: system prompt, court rubric and review rubric carry explicit versions
+  ---
+  duration_ms: 0.307322
+  type: 'test'
+  ...
+# Subtest: versioning: a completed run provenance records provider, promptVersion and rubricVersions
+ok 37 - versioning: a completed run provenance records provider, promptVersion and rubricVersions
+  ---
+  duration_ms: 8.795818
+  type: 'test'
+  ...
+# Subtest: browser regression: attached browser evidence keeps unreviewed status and forces needs-review
+ok 38 - browser regression: attached browser evidence keeps unreviewed status and forces needs-review
+  ---
+  duration_ms: 13.803593
+  type: 'test'
+  ...
+# Subtest: counterfactual runner-up excludes selected candidate and prefers Court score
+ok 39 - counterfactual runner-up excludes selected candidate and prefers Court score
+  ---
+  duration_ms: 1.023547
+  type: 'test'
+  ...
+# Subtest: counterfactual review comparison reports positive shadow delta without claiming causality
+ok 40 - counterfactual review comparison reports positive shadow delta without claiming causality
+  ---
+  duration_ms: 0.347117
+  type: 'test'
+  ...
+# Subtest: fallback review makes counterfactual comparison inconclusive
+ok 41 - fallback review makes counterfactual comparison inconclusive
+  ---
+  duration_ms: 0.247223
+  type: 'test'
+  ...
+# Subtest: CreativeIR validator rejects unsupported schema versions
+ok 42 - CreativeIR validator rejects unsupported schema versions
+  ---
+  duration_ms: 0.449011
+  type: 'test'
+  ...
+# Subtest: creative memory learns only from model reviews and persists bounded evidence
+ok 43 - creative memory learns only from model reviews and persists bounded evidence
+  ---
+  duration_ms: 2.555337
+  type: 'test'
+  ...
+# Subtest: temporary test state is cleaned up
+ok 44 - temporary test state is cleaned up
+  ---
+  duration_ms: 0.656203
+  type: 'test'
+  ...
+# Subtest: prepare creates blind randomized packet and separate version mapping
+ok 45 - prepare creates blind randomized packet and separate version mapping
+  ---
+  duration_ms: 3.114861
+  type: 'test'
+  ...
+# Subtest: prepare rejects duplicate case/version artifacts and one-version experiments
+ok 46 - prepare rejects duplicate case/version artifacts and one-version experiments
+  ---
+  duration_ms: 0.528649
+  type: 'test'
+  ...
+# Subtest: finalize applies hidden version mapping only after blind ratings and records audit
+ok 47 - finalize applies hidden version mapping only after blind ratings and records audit
+  ---
+  duration_ms: 1.016004
+  type: 'test'
+  ...
+# Subtest: finalize rejects unknown IDs, duplicate reviewer submissions, and premature version labels
+ok 48 - finalize rejects unknown IDs, duplicate reviewer submissions, and premature version labels
+  ---
+  duration_ms: 1.424089
+  type: 'test'
+  ...
+# Subtest: experiment manifest verifies packet, private mapping, and artifact content hashes
+ok 49 - experiment manifest verifies packet, private mapping, and artifact content hashes
+  ---
+  duration_ms: 1.058203
+  type: 'test'
+  ...
+# Subtest: experiment manifest does not reveal engine version labels
+ok 50 - experiment manifest does not reveal engine version labels
+  ---
+  duration_ms: 0.420153
+  type: 'test'
+  ...
+# Subtest: provenance is kept out of blind packet and retained privately for final audit
+ok 51 - provenance is kept out of blind packet and retained privately for final audit
+  ---
+  duration_ms: 1.039195
+  type: 'test'
+  ...
+# Subtest: provenance input rejects unsupported secret-like fields and invalid hashes
+ok 52 - provenance input rejects unsupported secret-like fields and invalid hashes
+  ---
+  duration_ms: 0.240333
+  type: 'test'
+  ...
+# Subtest: computes exact and linearly weighted agreement for overlapping ratings
+ok 53 - computes exact and linearly weighted agreement for overlapping ratings
+  ---
+  duration_ms: 1.551495
+  type: 'test'
+  ...
+# Subtest: flags missing criterion scores and fewer than two observations
+ok 54 - flags missing criterion scores and fewer than two observations
+  ---
+  duration_ms: 0.451297
+  type: 'test'
+  ...
+# Subtest: rejects duplicate reviewer submissions for one artifact
+ok 55 - rejects duplicate reviewer submissions for one artifact
+  ---
+  duration_ms: 0.501194
+  type: 'test'
+  ...
+# Subtest: rejects unknown criteria and out-of-range scores
+ok 56 - rejects unknown criteria and out-of-range scores
+  ---
+  duration_ms: 0.22796
+  type: 'test'
+  ...
+# Subtest: does not describe agreement as formal chance-corrected reliability
+ok 57 - does not describe agreement as formal chance-corrected reliability
+  ---
+  duration_ms: 0.326851
+  type: 'test'
+  ...
+# Subtest: all evidence gates passed only makes dossier eligible for human review
+ok 58 - all evidence gates passed only makes dossier eligible for human review
+  ---
+  duration_ms: 1.341607
+  type: 'test'
+  ...
+# Subtest: missing integrity verification blocks policy review eligibility
+ok 59 - missing integrity verification blocks policy review eligibility
+  ---
+  duration_ms: 0.227276
+  type: 'test'
+  ...
+# Subtest: insufficient paired cases and low reviewer agreement fail the gates
+ok 60 - insufficient paired cases and low reviewer agreement fail the gates
+  ---
+  duration_ms: 0.194974
+  type: 'test'
+  ...
+# Subtest: disagreement alerts remain visible and can block eligibility
+ok 61 - disagreement alerts remain visible and can block eligibility
+  ---
+  duration_ms: 0.289798
+  type: 'test'
+  ...
+# Subtest: invalid report structures and negative thresholds are rejected
+ok 62 - invalid report structures and negative thresholds are rejected
+  ---
+  duration_ms: 0.447459
+  type: 'test'
+  ...
+# Subtest: reports matching model/runtime and prompt provenance without claiming causality
+ok 63 - reports matching model/runtime and prompt provenance without claiming causality
+  ---
+  duration_ms: 8.241259
+  type: 'test'
+  ...
+# Subtest: flags model or generation configuration differences as confounds
+ok 64 - flags model or generation configuration differences as confounds
+  ---
+  duration_ms: 0.397958
+  type: 'test'
+  ...
+# Subtest: flags missing provenance instead of assuming settings match
+ok 65 - flags missing provenance instead of assuming settings match
+  ---
+  duration_ms: 0.32857
+  type: 'test'
+  ...
+# Subtest: rejects inconsistent provenance across reviewers for one artifact
+ok 66 - rejects inconsistent provenance across reviewers for one artifact
+  ---
+  duration_ms: 1.175109
+  type: 'test'
+  ...
+# Subtest: requires distinct versions present in the finalized ratings
+ok 67 - requires distinct versions present in the finalized ratings
+  ---
+  duration_ms: 0.32166
+  type: 'test'
+  ...
+# Subtest: benchmark fixture is valid and uses unique case/criterion IDs
+ok 68 - benchmark fixture is valid and uses unique case/criterion IDs
+  ---
+  duration_ms: 1.308735
+  type: 'test'
+  ...
+# Subtest: artifact score uses declared criterion weights and requires three independent reviewers by default
+ok 69 - artifact score uses declared criterion weights and requires three independent reviewers by default
+  ---
+  duration_ms: 0.830081
+  type: 'test'
+  ...
+# Subtest: paired version comparison reports descriptive per-case deltas only
+ok 70 - paired version comparison reports descriptive per-case deltas only
+  ---
+  duration_ms: 8.132162
+  type: 'test'
+  ...
+# Subtest: invalid scores and duplicate reviewer entries are rejected
+ok 71 - invalid scores and duplicate reviewer entries are rejected
+  ---
+  duration_ms: 0.588928
+  type: 'test'
+  ...
+# Subtest: incomplete or unpaired cases do not become version evidence
+ok 72 - incomplete or unpaired cases do not become version evidence
+  ---
+  duration_ms: 0.257124
+  type: 'test'
+  ...
+# Subtest: computes repeated-run score variability and paired case means
+ok 73 - computes repeated-run score variability and paired case means
+  ---
+  duration_ms: 10.522703
+  type: 'test'
+  ...
+# Subtest: insufficient repeats are excluded instead of silently treated as stable
+ok 74 - insufficient repeats are excluded instead of silently treated as stable
+  ---
+  duration_ms: 0.70827
+  type: 'test'
+  ...
+# Subtest: rejects a minimum repeat threshold below two and missing versions
+ok 75 - rejects a minimum repeat threshold below two and missing versions
+  ---
+  duration_ms: 0.763432
+  type: 'test'
+  ...
+# Subtest: rejects invalid reviewer scores via the Quality Lab validation
+ok 76 - rejects invalid reviewer scores via the Quality Lab validation
+  ---
+  duration_ms: 0.884825
+  type: 'test'
+  ...
+# Subtest: approval requires passed gates, bounded trial window, and rollback criteria
+ok 77 - approval requires passed gates, bounded trial window, and rollback criteria
+  ---
+  duration_ms: 2.500999
+  type: 'test'
+  ...
+# Subtest: failed evidence gates block approval but can be recorded as defer
+ok 78 - failed evidence gates block approval but can be recorded as defer
+  ---
+  duration_ms: 0.492228
+  type: 'test'
+  ...
+# Subtest: rejects missing rationale, invalid rollback criteria, and automatic-change dossier
+ok 79 - rejects missing rationale, invalid rollback criteria, and automatic-change dossier
+  ---
+  duration_ms: 0.351082
+  type: 'test'
+  ...
+# Subtest: ledger detects altered records and chain links
+ok 80 - ledger detects altered records and chain links
+  ---
+  duration_ms: 0.61501
+  type: 'test'
+  ...
+# Subtest: ledger appends decisions without changing previous records
+ok 81 - ledger appends decisions without changing previous records
+  ---
+  duration_ms: 0.389342
+  type: 'test'
+  ...
+# Subtest: 23 [UNIT] allowed destination is accepted and canonicalised
+ok 82 - 23 [UNIT] allowed destination is accepted and canonicalised
+  ---
+  duration_ms: 4.509839
+  type: 'test'
+  ...
+# Subtest: 24 [UNIT] unlisted host, subdomain and suffix lookalike are refused
+ok 83 - 24 [UNIT] unlisted host, subdomain and suffix lookalike are refused
+  ---
+  duration_ms: 5.635952
+  type: 'test'
+  ...
+# Subtest: 25 [UNIT] scheme, credentials, port and query rules are enforced before any I/O
+ok 84 - 25 [UNIT] scheme, credentials, port and query rules are enforced before any I/O
+  ---
+  duration_ms: 0.348754
+  type: 'test'
+  ...
+# Subtest: 26 [UNIT] loopback, private, link-local and metadata literals are all blocked
+ok 85 - 26 [UNIT] loopback, private, link-local and metadata literals are all blocked
+  ---
+  duration_ms: 0.841476
+  type: 'test'
+  ...
+# Subtest: 27 [UNIT] IPv6 forms that embed IPv4 cannot smuggle a private destination
+ok 86 - 27 [UNIT] IPv6 forms that embed IPv4 cannot smuggle a private destination
+  ---
+  duration_ms: 1.365523
+  type: 'test'
+  ...
+# Subtest: 28 [UNIT] non-canonical IPv4 literals are refused as an SSRF bypass primitive
+ok 87 - 28 [UNIT] non-canonical IPv4 literals are refused as an SSRF bypass primitive
+  ---
+  duration_ms: 0.344817
+  type: 'test'
+  ...
+# Subtest: 29 [INJECTED] a single blocked DNS answer cancels the hop
+ok 88 - 29 [INJECTED] a single blocked DNS answer cancels the hop
+  ---
+  duration_ms: 0.882487
+  type: 'test'
+  ...
+# Subtest: 30 [INJECTED] DNS failure and empty answers fail closed with distinct codes
+ok 89 - 30 [INJECTED] DNS failure and empty answers fail closed with distinct codes
+  ---
+  duration_ms: 0.709882
+  type: 'test'
+  ...
+# Subtest: 31 [INJECTED] connection is pinned to the validated IP and DNS is never re-consulted
+ok 90 - 31 [INJECTED] connection is pinned to the validated IP and DNS is never re-consulted
+  ---
+  duration_ms: 3.212203
+  type: 'test'
+  ...
+# Subtest: 32 [INJECTED] a redirect is refused and never followed
+ok 91 - 32 [INJECTED] a redirect is refused and never followed
+  ---
+  duration_ms: 1.602158
+  type: 'test'
+  ...
+# Subtest: 33 [INJECTED] redirects to a blocked destination cannot widen the allowlist
+ok 92 - 33 [INJECTED] redirects to a blocked destination cannot widen the allowlist
+  ---
+  duration_ms: 0.82441
+  type: 'test'
+  ...
+# Subtest: 34 [INJECTED] binary, encoded, oversized and expired responses are refused
+ok 93 - 34 [INJECTED] binary, encoded, oversized and expired responses are refused
+  ---
+  duration_ms: 0.729775
+  type: 'test'
+  ...
+# Subtest: 35 [INJECTED] declared and streamed byte budgets are both enforced
+ok 94 - 35 [INJECTED] declared and streamed byte budgets are both enforced
+  ---
+  duration_ms: 0.713006
+  type: 'test'
+  ...
+# Subtest: 36 [INJECTED] streamed body over budget is refused mid-stream
+ok 95 - 36 [INJECTED] streamed body over budget is refused mid-stream
+  ---
+  duration_ms: 1.347064
+  type: 'test'
+  ...
+# Subtest: 37 [INJECTED] an already-cancelled deadline performs no request at all
+ok 96 - 37 [INJECTED] an already-cancelled deadline performs no request at all
+  ---
+  duration_ms: 0.309398
+  type: 'test'
+  ...
+# Subtest: 38 [INJECTED] a mid-flight cancellation aborts the transport
+ok 97 - 38 [INJECTED] a mid-flight cancellation aborts the transport
+  ---
+  duration_ms: 0.587005
+  type: 'test'
+  ...
+# Subtest: 39 [UNIT] the run slot is exclusive and release is idempotent
+ok 98 - 39 [UNIT] the run slot is exclusive and release is idempotent
+  ---
+  duration_ms: 0.156782
+  type: 'test'
+  ...
+# Subtest: 40 [UNIT] authorization is fail-closed on every misconfiguration
+ok 99 - 40 [UNIT] authorization is fail-closed on every misconfiguration
+  ---
+  duration_ms: 0.34717
+  type: 'test'
+  ...
+# Subtest: 41 [UNIT] execution success is capped at succeeded, never verified
+ok 100 - 41 [UNIT] execution success is capped at succeeded, never verified
+  ---
+  duration_ms: 0.889931
+  type: 'test'
+  ...
+# Subtest: 42 [UNIT] verification requires independent evidence that post-dates the execution
+ok 101 - 42 [UNIT] verification requires independent evidence that post-dates the execution
+  ---
+  duration_ms: 0.421457
+  type: 'test'
+  ...
+# Subtest: 43 [UNIT] a verification rule is mandatory
+ok 102 - 43 [UNIT] a verification rule is mandatory
+  ---
+  duration_ms: 0.30778
+  type: 'test'
+  ...
+# Subtest: 44 [UNIT] failure is recorded as failed and cannot jump to succeeded
+ok 103 - 44 [UNIT] failure is recorded as failed and cannot jump to succeeded
+  ---
+  duration_ms: 0.27859
+  type: 'test'
+  ...
+# Subtest: 45 [UNIT] conflicting evidence downgrades a succeeded claim to unknown
+ok 104 - 45 [UNIT] conflicting evidence downgrades a succeeded claim to unknown
+  ---
+  duration_ms: 0.224349
+  type: 'test'
+  ...
+# Subtest: 46 [UNIT] missing evidence resolves to unknown, not success
+ok 105 - 46 [UNIT] missing evidence resolves to unknown, not success
+  ---
+  duration_ms: 0.154884
+  type: 'test'
+  ...
+# Subtest: 47 [UNIT] the claim ledger keeps source, run, timing and reason for audit
+ok 106 - 47 [UNIT] the claim ledger keeps source, run, timing and reason for audit
+  ---
+  duration_ms: 0.256773
+  type: 'test'
+  ...
+# Subtest: 48 [UNIT] unknown claim IDs and duplicate registrations are rejected
+ok 107 - 48 [UNIT] unknown claim IDs and duplicate registrations are rejected
+  ---
+  duration_ms: 0.222886
+  type: 'test'
+  ...
+# Subtest: 49 [UNIT] bearer tokens, query secrets and embedded credentials are redacted
+ok 108 - 49 [UNIT] bearer tokens, query secrets and embedded credentials are redacted
+  ---
+  duration_ms: 0.307676
+  type: 'test'
+  ...
+# Subtest: 50 [UNIT] sensitive headers are recognised and stripped before transport
+ok 109 - 50 [UNIT] sensitive headers are recognised and stripped before transport
+  ---
+  duration_ms: 0.468229
+  type: 'test'
+  ...
+# Subtest: 51 [INJECTED] an error raised with a secret in its text is stored redacted
+ok 110 - 51 [INJECTED] an error raised with a secret in its text is stored redacted
+  ---
+  duration_ms: 0.635844
+  type: 'test'
+  ...
+# Subtest: 52 [UNIT] independent integrity check accepts a genuine artifact and rejects tampering
+ok 111 - 52 [UNIT] independent integrity check accepts a genuine artifact and rejects tampering
+  ---
+  duration_ms: 0.301432
+  type: 'test'
+  ...
+# Subtest: 53 [UNIT] evidence stays bounded and explicitly untrusted
+ok 112 - 53 [UNIT] evidence stays bounded and explicitly untrusted
+  ---
+  duration_ms: 0.244183
+  type: 'test'
+  ...
+# Subtest: 54 [UNIT] snapshots remain schema 1.0.0 and load without a claims field
+ok 113 - 54 [UNIT] snapshots remain schema 1.0.0 and load without a claims field
+  ---
+  duration_ms: 38.164234
+  type: 'test'
+  ...
+# Subtest: 55 [UNIT] a snapshot carrying a claims ledger round-trips intact
+ok 114 - 55 [UNIT] a snapshot carrying a claims ledger round-trips intact
+  ---
+  duration_ms: 3.521495
+  type: 'test'
+  ...
+# (node:1817) [DEP0123] DeprecationWarning: Setting the TLS ServerName to an IP address is not permitted by RFC 6066. This will be ignored in a future version.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: 56 [UNIT] snapshot overwrite, corruption and path traversal stay blocked
+ok 115 - 56 [UNIT] snapshot overwrite, corruption and path traversal stay blocked
+  ---
+  duration_ms: 3.41945
+  type: 'test'
+  ...
+# Subtest: 57 [REAL-TCP] a real pinned TLS request succeeds on loopback
+ok 116 - 57 [REAL-TCP] a real pinned TLS request succeeds on loopback
+  ---
+  duration_ms: 18.751477
+  type: 'test'
+  ...
+# Subtest: 58 [REAL-TCP] a real 302 is refused without following the hop
+ok 117 - 58 [REAL-TCP] a real 302 is refused without following the hop
+  ---
+  duration_ms: 6.865666
+  type: 'test'
+  ...
+# Subtest: 59 [REAL-TCP] a real request timeout fires against a hanging socket
+ok 118 - 59 [REAL-TCP] a real request timeout fires against a hanging socket
+  ---
+  duration_ms: 8007.355721
+  type: 'test'
+  ...
+# Subtest: 60 [REAL-TCP] real cancellation aborts an in-flight slow socket
+ok 119 - 60 [REAL-TCP] real cancellation aborts an in-flight slow socket
+  ---
+  duration_ms: 153.258398
+  type: 'test'
+  ...
+# Subtest: 61 [REAL-TCP] a DNS-failed host never opens a socket
+ok 120 - 61 [REAL-TCP] a DNS-failed host never opens a socket
+  ---
+  duration_ms: 2.98405
+  type: 'test'
+  ...
+# Subtest: 62 [NO-CHROME] a run without a Chromium binary reports failed, never completed
+ok 121 - 62 [NO-CHROME] a run without a Chromium binary reports failed, never completed
+  ---
+  duration_ms: 15.257657
+  type: 'test'
+  ...
+1..121
+# tests 121
+# suites 0
+# pass 121
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13245.072069
