@@ -4,6 +4,7 @@
 .env.production
 .env.staging
 *.pem
+!backend/tests/fixtures/*.pem
 *.key
 *.p12
 *.jks
