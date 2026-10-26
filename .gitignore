@@ -7,6 +7,9 @@
 *.key
 *.p12
 *.jks
+# Loopback-only test credentials are intentional, non-production fixtures.
+!backend/tests/fixtures/key.pem
+!backend/tests/fixtures/cert.pem
 
 # ── Dependencies ─────────────────────────────────────────────────────────────
 node_modules/

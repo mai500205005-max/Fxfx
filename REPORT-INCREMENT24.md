@@ -10,7 +10,7 @@
 | `cd backend && npm test` | 0 | TypeScript build succeeded; **147/147 tests passed**, 0 failed, 0 skipped |
 | `git diff --check` | 0 | Clean |
 
-The first test attempt found four TLS transport tests depended on absent, checked-out PEM files. The tests now create an ephemeral self-signed loopback certificate in a temporary directory and remove it after each test. No private key or certificate is stored in the repository.
+The initial test run found four TLS transport tests depended on missing PEM fixtures. Restored a self-signed test-only key/certificate pair at the expected fixture paths. The private key is only for local loopback transport tests and is not a production credential.
 
 ## Increment 24 coverage
 
@@ -30,4 +30,4 @@ Generated files are excluded from Git and Replit deployment. The source tests ar
 
 ## Limitations
 
-The user requested a committed PEM key fixture. To avoid storing reusable private key material, the equivalent loopback test setup generates and deletes test-only credentials at runtime. A remote push was requested; its result is recorded in the task completion message.
+The restored PEM key/certificate pair is test-only. A remote push was requested; its result is recorded in the task completion message.
