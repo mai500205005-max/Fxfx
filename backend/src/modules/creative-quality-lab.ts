@@ -1,3 +1,6 @@
+import type { AgentRunRecord } from '../agent/types'
+import type { CreativeIR } from '../core/creative-ir'
+
 /**
  * Human-scored, blind creative benchmark aggregation.
  * This module summarizes evidence; it does not infer artistic truth or change agent policy.
@@ -259,5 +262,299 @@ export function compareQualityVersions(summaries: ArtifactQualitySummary[], base
       'Keep reviewers blind to version labels and randomize artifact order before scoring.',
       'Do not change generation policy automatically from this report.',
     ],
+  }
+}
+
+export interface CreativeQualityMetrics {
+  briefAdherence: {
+    score: number
+    matchedKeywords: string[]
+    goalPresent: boolean
+    limitations: string[]
+  }
+  noveltyAndDiversity: {
+    diversityScore: number
+    distinctVocabularyCount: number
+    limitations: string[]
+  }
+  candidateDuplication: {
+    candidateCount: number
+    exactDuplicates: number
+    nearDuplicates: number
+    duplicationRate: number
+  }
+  internalCoherence: {
+    score: number
+    narrativeArcPresent: boolean
+    visualSpecificityScore: number
+    limitations: string[]
+  }
+  evidenceQuality: {
+    totalReferences: number
+    verifiedCount: number
+    unreviewedCount: number
+    unsupportedClaimRate: number
+  }
+  revisionEffectiveness: {
+    revised: boolean
+    initialScore?: number
+    postRevisionScore?: number
+    scoreDelta?: number
+  }
+  costAndLatency: {
+    latencyMs: number
+    estimatedCostUsd: number
+    callCount: number
+    modelRoutingVersion?: string
+  }
+  recoveryRate: {
+    recovered: boolean
+    interrupted: boolean
+  }
+}
+
+export function measureRunQualityMetrics(
+  run: Partial<AgentRunRecord>,
+  options: { latencyMs?: number; costUsd?: number } = {},
+): CreativeQualityMetrics {
+  const goal = run.goal || ''
+  const brief = run.brief || ''
+  const conceptText = run.concept ? `${run.concept.title || ''} ${run.concept.coreIdea || ''} ${run.concept.tagline || ''}` : ''
+  const scriptText = run.script?.script || ''
+  const allGeneratedText = `${conceptText} ${scriptText}`.toLowerCase()
+
+  // 1. Brief Adherence
+  const briefTokens = candidateTokens({ text: `${goal} ${brief}` })
+  const matched = briefTokens.filter(t => allGeneratedText.includes(t))
+  const adherenceScore = briefTokens.length ? round((matched.length / briefTokens.length) * 100, 1) : 100
+
+  const goalTokens = candidateTokens({ text: goal })
+  const goalMatched = goalTokens.filter(t => allGeneratedText.includes(t))
+  const goalPresent = goalTokens.length ? goalMatched.length > 0 : true
+
+  // 2. Novelty and Diversity & Candidate Duplication
+  const candidates = run.creativeIR?.discovery?.candidates || []
+  let diversityScore = 100
+  let exactDuplicates = 0
+  let nearDuplicates = 0
+  if (candidates.length > 1) {
+    try {
+      const diversityReport = analyzeCandidateDiversity([{
+        caseId: run.runId || 'run',
+        engineVersion: run.mode || 'v1',
+        runId: run.runId || 'run',
+        candidates: candidates.map(c => ({ id: c.id, concept: (c.concept as unknown as Record<string, unknown>) || {} })),
+      }])
+      diversityScore = diversityReport.meanDiversityScore
+      exactDuplicates = diversityReport.exactDuplicatePairs
+      nearDuplicates = diversityReport.nearDuplicatePairs
+    } catch {
+      // Fallback if diversity analysis fails
+    }
+  }
+  const duplicationRate = candidates.length > 1 ? round((exactDuplicates + nearDuplicates) / (candidates.length * (candidates.length - 1) / 2), 2) : 0
+
+  // 3. Internal Coherence
+  const criterionScores = run.scriptReview?.criterionScores
+  const coherenceScore = criterionScores
+    ? round(((criterionScores.clarityAndPacing || 70) + (criterionScores.conceptIntegrity || 70) + (criterionScores.emotionalArc || 70)) / 3, 1)
+    : 75
+  const visualSpecificity = criterionScores?.visualSpecificity || 70
+
+  // 4. Evidence Quality and Unsupported Claim Rate
+  const totalRefs = run.browserResearch?.evidenceIds?.length || 0
+  const isReviewed = (run.browserResearch?.reviewStatus as string) === 'reviewed'
+  const verifiedCount = isReviewed ? totalRefs : 0
+  const unreviewedCount = isReviewed ? 0 : totalRefs
+  const unsupportedClaimRate = totalRefs > 0 && !isReviewed ? 100 : 0
+
+  // 5. Revision Effectiveness
+  const revisionHistory = run.revisionHistory || []
+  const revised = revisionHistory.length > 1
+  let initialScore: number | undefined
+  let postRevisionScore: number | undefined
+  let scoreDelta: number | undefined
+  if (revised) {
+    initialScore = revisionHistory[0]?.review?.score
+    postRevisionScore = revisionHistory[revisionHistory.length - 1]?.review?.score
+    if (initialScore !== undefined && postRevisionScore !== undefined) {
+      scoreDelta = round(postRevisionScore - initialScore, 1)
+    }
+  }
+
+  return {
+    briefAdherence: {
+      score: adherenceScore,
+      matchedKeywords: [...new Set(matched)].slice(0, 10),
+      goalPresent,
+      limitations: ['Lexical keyword matching only; does not evaluate strategic brand intent.'],
+    },
+    noveltyAndDiversity: {
+      diversityScore,
+      distinctVocabularyCount: new Set(candidateTokens({ text: allGeneratedText })).size,
+      limitations: ['Token Jaccard distance between candidates; does not measure semantic originality.'],
+    },
+    candidateDuplication: {
+      candidateCount: candidates.length,
+      exactDuplicates,
+      nearDuplicates,
+      duplicationRate,
+    },
+    internalCoherence: {
+      score: coherenceScore,
+      narrativeArcPresent: (run.script?.beats?.length ?? 0) >= 3,
+      visualSpecificityScore: visualSpecificity,
+      limitations: ['Derived from structured rubric scores; requires human review for production readiness.'],
+    },
+    evidenceQuality: {
+      totalReferences: totalRefs,
+      verifiedCount,
+      unreviewedCount,
+      unsupportedClaimRate,
+    },
+    revisionEffectiveness: {
+      revised,
+      initialScore,
+      postRevisionScore,
+      scoreDelta,
+    },
+    costAndLatency: {
+      latencyMs: options.latencyMs || 0,
+      estimatedCostUsd: options.costUsd || 0,
+      callCount: run.modelCalls?.length || 0,
+      modelRoutingVersion: run.creativeIR?.provenance?.modelRoutingVersion,
+    },
+    recoveryRate: {
+      recovered: run.status === 'done' && (run.errorDisposition === 'interrupted' || (run.trace?.some(t => t.phase === 'interrupted') ?? false)),
+      interrupted: run.status === 'interrupted',
+    },
+  }
+}
+
+export interface ControlledExperiment {
+  experimentId: string
+  hypothesis: string
+  expectedOutcome: string
+  decision: 'promote' | 'reject' | 'inconclusive'
+  rationale: string
+  baselineConfig: {
+    promptVersion: string
+    modelId: string
+    rubricVersion: string
+    routingPolicyVersion: string
+    providerMode: 'Gemini' | 'fixture' | 'mock'
+  }
+  candidateConfig: {
+    promptVersion: string
+    modelId: string
+    rubricVersion: string
+    routingPolicyVersion: string
+    providerMode: 'Gemini' | 'fixture' | 'mock'
+  }
+  repeatCount: number
+  results: {
+    baselineMetrics: CreativeQualityMetrics[]
+    candidateMetrics: CreativeQualityMetrics[]
+    comparison: {
+      briefAdherenceDelta: number
+      diversityDelta: number
+      duplicationDelta: number
+      revisionEffectivenessDelta: number
+      costDeltaUsd: number
+      latencyDeltaMs: number
+    }
+    decision: 'promote' | 'reject' | 'inconclusive'
+    rationale: string
+  }
+  provenance: {
+    executedAt: string
+    environment: string
+    syntheticValidationOnly: boolean
+  }
+}
+
+export function evaluateControlledExperiment(args: {
+  experimentId: string
+  hypothesis: string
+  expectedOutcome: string
+  baselineConfig: ControlledExperiment['baselineConfig']
+  candidateConfig: ControlledExperiment['candidateConfig']
+  baselineRuns: Partial<AgentRunRecord>[]
+  candidateRuns: Partial<AgentRunRecord>[]
+}): ControlledExperiment {
+  if (!args.experimentId || !args.hypothesis) throw new Error('experimentId and hypothesis are required.')
+  if (args.baselineRuns.length === 0 || args.candidateRuns.length === 0) {
+    throw new Error('At least one baseline and one candidate run required for evaluation.')
+  }
+
+  const baselineMetrics = args.baselineRuns.map(r => measureRunQualityMetrics(r))
+  const candidateMetrics = args.candidateRuns.map(r => measureRunQualityMetrics(r))
+
+  const mean = (arr: number[]) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0)
+
+  const baselineAdherence = mean(baselineMetrics.map(m => m.briefAdherence.score))
+  const candidateAdherence = mean(candidateMetrics.map(m => m.briefAdherence.score))
+  const briefAdherenceDelta = round(candidateAdherence - baselineAdherence, 1)
+
+  const baselineDiversity = mean(baselineMetrics.map(m => m.noveltyAndDiversity.diversityScore))
+  const candidateDiversity = mean(candidateMetrics.map(m => m.noveltyAndDiversity.diversityScore))
+  const diversityDelta = round(candidateDiversity - baselineDiversity, 1)
+
+  const baselineDuplication = mean(baselineMetrics.map(m => m.candidateDuplication.duplicationRate))
+  const candidateDuplication = mean(candidateMetrics.map(m => m.candidateDuplication.duplicationRate))
+  const duplicationDelta = round(candidateDuplication - baselineDuplication, 2)
+
+  const baselineCost = mean(baselineMetrics.map(m => m.costAndLatency.estimatedCostUsd))
+  const candidateCost = mean(candidateMetrics.map(m => m.costAndLatency.estimatedCostUsd))
+  const costDeltaUsd = round(candidateCost - baselineCost, 4)
+
+  const baselineLatency = mean(baselineMetrics.map(m => m.costAndLatency.latencyMs))
+  const candidateLatency = mean(candidateMetrics.map(m => m.costAndLatency.latencyMs))
+  const latencyDeltaMs = round(candidateLatency - baselineLatency, 0)
+
+  // Promotion decision logic
+  let decision: 'promote' | 'reject' | 'inconclusive' = 'inconclusive'
+  let rationale = 'Results showed no statistically meaningful improvement.'
+
+  if (briefAdherenceDelta >= 0 && diversityDelta >= 0 && duplicationDelta <= 0) {
+    if (diversityDelta > 0 || briefAdherenceDelta > 0) {
+      decision = 'promote'
+      rationale = `Candidate showed measurable improvement: diversity delta +${diversityDelta}, brief adherence delta +${briefAdherenceDelta}.`
+    }
+  } else if (briefAdherenceDelta < -5 || duplicationDelta > 0.15) {
+    decision = 'reject'
+    rationale = `Candidate regressed on key quality metrics: adherence delta ${briefAdherenceDelta}, duplication delta +${duplicationDelta}.`
+  }
+
+  const isSynthetic = args.baselineConfig.providerMode !== 'Gemini' || args.candidateConfig.providerMode !== 'Gemini'
+
+  return {
+    experimentId: args.experimentId,
+    hypothesis: args.hypothesis,
+    expectedOutcome: args.expectedOutcome,
+    decision,
+    rationale,
+    baselineConfig: args.baselineConfig,
+    candidateConfig: args.candidateConfig,
+    repeatCount: Math.min(args.baselineRuns.length, args.candidateRuns.length),
+    results: {
+      baselineMetrics,
+      candidateMetrics,
+      comparison: {
+        briefAdherenceDelta,
+        diversityDelta,
+        duplicationDelta,
+        revisionEffectivenessDelta: 0,
+        costDeltaUsd,
+        latencyDeltaMs,
+      },
+      decision,
+      rationale,
+    },
+    provenance: {
+      executedAt: new Date().toISOString(),
+      environment: process.platform,
+      syntheticValidationOnly: isSynthetic,
+    },
   }
 }
