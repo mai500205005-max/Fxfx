@@ -108,3 +108,18 @@ export function getCandidateArchive(runId?: string): CandidateArchiveEntry[] {
     .filter(entry => !runId || entry.runId === runId)
     .map(entry => structuredClone(entry))
 }
+
+export function deleteCandidateArchive(runId: string): number {
+  if (!runId) return 0
+  const beforeCount = entries.length
+  entries = entries.filter(entry => entry.runId !== runId)
+  const deletedCount = beforeCount - entries.length
+  if (deletedCount > 0) {
+    try {
+      persistArchive()
+    } catch {
+      // Non-fatal if persistence fails during purge
+    }
+  }
+  return deletedCount
+}

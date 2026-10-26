@@ -17,10 +17,10 @@ import type { mapConcept } from '../modules/concept-mapper'
 import { writeScript } from '../modules/script-writer'
 import { getLateralThinkingSystemPrompt, SYSTEM_PROMPT_VERSION, type LateralThinkingContext } from '../modules/lateral-thinking-agent'
 import { recordUsage } from '../saas/saas-state'
-import { recordCandidateDecision } from '../modules/candidate-archive'
+import { recordCandidateDecision, deleteCandidateArchive } from '../modules/candidate-archive'
 import { createArtifactApproval, validateArtifactApproval, type ApprovalBasis, type ArtifactApproval, type ApprovalValidation } from './approval-integrity'
 import { createCreativeIR, summarizeCreativeIR, CREATIVE_IR_VERSION } from '../core/creative-ir'
-import { appendAgentRunEvent, appendIdempotencyRecord, loadAgentRunEvents, loadAgentRuns, loadIdempotencyRecords, persistAgentRun, reconstructAgentRunLifecycle, type IdempotencyRecord } from './agent-run-store'
+import { appendAgentRunEvent, appendIdempotencyRecord, loadAgentRunEvents, loadAgentRuns, loadIdempotencyRecords, persistAgentRun, reconstructAgentRunLifecycle, deletePersistedAgentRun, pruneExpiredAgentRuns, type IdempotencyRecord } from './agent-run-store'
 import type {
   AgentExecutionPlan,
   AgentEvaluation,
@@ -220,7 +220,14 @@ export function listAgentRuns(): AgentRunRecord[] {
 }
 
 export function getAgentRun(runId: string): AgentRunRecord | undefined {
-  const record = runStore.get(runId)
+  let record = runStore.get(runId)
+  if (!record) {
+    const onDisk = loadAgentRuns().find(r => r.runId === runId)
+    if (onDisk) {
+      runStore.set(runId, onDisk)
+      record = onDisk
+    }
+  }
   return record ? { ...record, trace: [...record.trace] } : undefined
 }
 
@@ -252,6 +259,7 @@ function recordApprovalEvent(record: AgentRunRecord, eventType: 'run.approval.cr
 
 /** Trusted server-side entrypoint; do not expose until approver authentication is configured. */
 export function approveAgentRun(runId: string, approvedBy: string, policyVersion = process.env.TEXTFX_APPROVAL_POLICY_VERSION || 'creative-approval-v1'): ArtifactApproval {
+  getAgentRun(runId)
   const record = runStore.get(runId)
   if (!record) throw new Error('Run not found.')
   const approval = createArtifactApproval({ approvedBy, basis: approvalBasis(record, policyVersion) })
@@ -265,6 +273,7 @@ export function approveAgentRun(runId: string, approvedBy: string, policyVersion
 }
 
 export function validateAgentRunApproval(runId: string, policyVersion = process.env.TEXTFX_APPROVAL_POLICY_VERSION || 'creative-approval-v1'): ApprovalValidation {
+  getAgentRun(runId)
   const record = runStore.get(runId)
   if (!record?.approval || !record.creativeIR) return { valid: false, reason: 'No artifact approval is recorded.' }
   const result = validateArtifactApproval(record.approval, approvalBasis(record, policyVersion))
@@ -280,6 +289,59 @@ export function validateAgentRunApproval(runId: string, policyVersion = process.
     recordApprovalEvent(record, 'run.approval.invalidated', result.reason || 'Approval no longer applies to the current artifact.', 'agent-service')
   }
   return result
+}
+
+export function executeConsequentialAction(args: { runId: string; action: string; policyVersion?: string }): { ok: boolean; runId: string; action: string; approvedBy: string; executedAt: string } {
+  if (!args.action || typeof args.action !== 'string') throw new Error('Action name is required.')
+  getAgentRun(args.runId)
+  const record = runStore.get(args.runId)
+  if (!record) throw new Error('Run not found.')
+  if (record.status !== 'done' || !record.creativeIR) {
+    throw new Error('Consequential external action requires a completed creative run.')
+  }
+  const validation = validateAgentRunApproval(args.runId, args.policyVersion)
+  if (!validation.valid) {
+    throw new Error(`Consequential action '${args.action}' blocked: human approval required. (${validation.reason || 'unapproved'})`)
+  }
+  const timestamp = now()
+  const traceItem: AgentTraceItem = {
+    phase: record.status,
+    message: `Consequential action '${args.action}' executed with verified approval ${record.approval?.approvalId}.`,
+    ts: timestamp,
+    meta: { action: args.action, approvedBy: record.approval?.approvedBy },
+  }
+  record.trace.push(traceItem)
+  record.updatedAt = timestamp
+  appendAgentRunEvent({
+    runId: record.runId,
+    previousPhase: record.status,
+    phase: record.status,
+    trace: traceItem,
+    actor: 'human',
+    eventType: 'run.phase.changed',
+    detail: `Action '${args.action}' approved by ${record.approval?.approvedBy}`,
+  })
+  persistAgentRun(record)
+  auditTrail.push(traceItem)
+  return {
+    ok: true,
+    runId: args.runId,
+    action: args.action,
+    approvedBy: record.approval!.approvedBy,
+    executedAt: timestamp,
+  }
+}
+
+export function deleteAgentRun(runId: string): boolean {
+  const existedInMemory = runStore.delete(runId)
+  let existedOnDisk = false
+  try {
+    existedOnDisk = deletePersistedAgentRun(runId)
+  } catch {
+    // If runId is malformed or file not present, ignore
+  }
+  deleteCandidateArchive(runId)
+  return existedInMemory || existedOnDisk
 }
 
 export function listAgentAudit(limit = 20): AgentTraceItem[] {

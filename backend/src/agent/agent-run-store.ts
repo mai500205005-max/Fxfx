@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto'
-import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { AgentPhase, AgentRunRecord, AgentTraceItem } from './types'
 
@@ -135,4 +135,40 @@ export function loadIdempotencyRecords(): IdempotencyRecord[] {
     } catch { /* Preserve but ignore malformed idempotency records. */ }
   }
   return [...latest.values()]
+}
+
+export function deletePersistedAgentRun(runId: string): boolean {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(runId)) {
+    throw new Error('Invalid run ID for deletion.')
+  }
+  const target = resolve(runsDirectory, `${runId}.json`)
+  if (existsSync(target)) {
+    try {
+      rmSync(target, { force: true })
+      return true
+    } catch {
+      return false
+    }
+  }
+  return false
+}
+
+export function pruneExpiredAgentRuns(retentionDays = 30): number {
+  if (!existsSync(runsDirectory) || retentionDays <= 0) return 0
+  const maxAgeMs = retentionDays * 24 * 60 * 60 * 1000
+  const now = Date.now()
+  let prunedCount = 0
+  for (const fileName of readdirSync(runsDirectory).filter(name => /^[0-9a-f-]+\.json$/i.test(name))) {
+    const fullPath = resolve(runsDirectory, fileName)
+    try {
+      const stats = statSync(fullPath)
+      if (now - stats.mtimeMs > maxAgeMs) {
+        rmSync(fullPath, { force: true })
+        prunedCount++
+      }
+    } catch {
+      // Continue pruning remaining files
+    }
+  }
+  return prunedCount
 }

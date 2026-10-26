@@ -38,6 +38,7 @@ import agentRoutes from './agent/agent-route'
 import saasRoutes  from './saas/saas-route'
 import browserRoutes from './browser/browser-route'
 import { recordRequest, getMetrics } from './utils/metrics'
+import { authenticateApi, policyCheck, redactText, sanitize } from './utils/security'
 
 // ─── CLI arg parser ───────────────────────────────────────────────────────────
 function getArg(name: string, fallback?: string): string | undefined {
@@ -66,13 +67,14 @@ function redact(obj: Record<string, unknown>): Record<string, unknown> {
       if (PII_KEYS.some(p => k.toLowerCase().includes(p)) && typeof v === 'string') {
         return [k, `[REDACTED:${hashStr(v)}]`]
       }
+      if (typeof v === 'string') return [k, redactText(v)]
       return [k, v]
     })
   )
 }
 
 function log(level: 'info' | 'warn' | 'error', msg: string, meta: Record<string, unknown> = {}) {
-  const entry = JSON.stringify({ level, ts: new Date().toISOString(), msg, ...redact(meta) })
+  const entry = JSON.stringify({ level, ts: new Date().toISOString(), msg: redactText(msg), ...redact(meta) })
   console[level](entry)
   try { fs.appendFileSync(LOG_FILE, entry + '\n') } catch { /* non-fatal */ }
 }
@@ -100,33 +102,6 @@ function spawnAgent(id: string): void {
   agents.set(id, { proc, timer })
 }
 
-// ─── Sanitizer + Policy ───────────────────────────────────────────────────────
-const DENY_RE = [
-  /ignore previous instructions/i,
-  /system:\s*you are/i,
-  /\bprompt injection\b/i,
-  /<script[\s>]/i,
-  /javascript:/i,
-]
-
-function sanitize(s: string): { ok: boolean; reason?: string } {
-  if (!s || typeof s !== 'string') return { ok: false, reason: 'empty input' }
-  if (s.length > 8_000)            return { ok: false, reason: 'input too long' }
-  for (const re of DENY_RE) {
-    if (re.test(s)) return { ok: false, reason: 'sanitizer: injection pattern detected' }
-  }
-  return { ok: true }
-}
-
-const POLICY_BLOCK = ['bomb', 'weapon', 'malware', 'exploit', 'ransomware', 'ddos']
-function policyCheck(s: string): { allowed: boolean; reason?: string } {
-  const lower = s.toLowerCase()
-  for (const w of POLICY_BLOCK) {
-    if (lower.includes(w)) return { allowed: false, reason: `blocked term: ${w}` }
-  }
-  return { allowed: true }
-}
-
 // ─── Timeout wrapper ──────────────────────────────────────────────────────────
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return Promise.race([
@@ -142,7 +117,11 @@ const app = express()
 
 // CORS — allow configured origin (Vite proxy dev) or custom prod origin
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5000'
-app.use(cors({ origin: CORS_ORIGIN }))
+app.use(cors({
+  origin: CORS_ORIGIN,
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID', 'Idempotency-Key', 'X-Tenant-ID'],
+}))
 
 // Security headers (no external package required)
 app.use((_req: Request, res: Response, next: NextFunction) => {
@@ -151,6 +130,8 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
   res.setHeader('X-XSS-Protection', '0')                          // modern: rely on CSP
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
   res.setHeader('Content-Security-Policy', "default-src 'none'")
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
   next()
 })
 
@@ -174,6 +155,17 @@ const llmLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders:   false,
   message:         { error: 'rate limit exceeded — max 60 req/min' },
+})
+
+// Server-side API key authentication boundary (enforced when TEXTFX_API_KEY is set in environment)
+app.use('/api', (req: Request, res: Response, next: NextFunction) => {
+  if (req.path === '/health' || req.path === '/healthz' || req.path === '/key-status') {
+    return next()
+  }
+  if (!authenticateApi(req)) {
+    return void res.status(401).json({ error: 'Unauthorized: valid API key required' })
+  }
+  next()
 })
 
 function requestBudgetContext(req: Request) {
